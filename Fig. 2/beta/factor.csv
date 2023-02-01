@@ -1,0 +1,33 @@
+ID,Factor,Plot,R2,Domains,Distance
+1,Site,H,36.5,Bacteria,Bray_Curtis
+2,Field,G,8.9,Bacteria,Bray_Curtis
+3,Site¡ÁField,F,17.3,Bacteria,Bray_Curtis
+4,Time ,E,2.4,Bacteria,Bray_Curtis
+5,Site¡ÁTime,D,4.9,Bacteria,Bray_Curtis
+6,Field¡ÁTime,C,0.7,Bacteria,Bray_Curtis
+7,Site¡ÁField¡ÁTime,B,3.5,Bacteria,Bray_Curtis
+8,Unknow,A,25.8,Bacteria,Bray_Curtis
+9,Site,H,24.2,Bacteria,UnWeighted
+10,Field,G,9.4,Bacteria,UnWeighted
+11,Site¡ÁField,F,12,Bacteria,UnWeighted
+12,Time ,E,1.5,Bacteria,UnWeighted
+13,Site¡ÁTime,D,7.1,Bacteria,UnWeighted
+14,Field¡ÁTime,C,0.6,Bacteria,UnWeighted
+15,Site¡ÁField¡ÁTime,B,6,Bacteria,UnWeighted
+16,Unknow,A,39.1,Bacteria,UnWeighted
+17,Site,H,30.3,Fungi,Bray_Curtis
+18,Field,G,8.1,Fungi,Bray_Curtis
+19,Site¡ÁField,F,17.9,Fungi,Bray_Curtis
+20,Time ,E,3.8,Fungi,Bray_Curtis
+21,Site¡ÁTime,D,6.5,Fungi,Bray_Curtis
+22,Field¡ÁTime,C,1.4,Fungi,Bray_Curtis
+23,Site¡ÁField¡ÁTime,B,4.9,Fungi,Bray_Curtis
+24,Unknow,A,27.1,Fungi,Bray_Curtis
+25,Site,H,14.2,Fungi,UnWeighted
+26,Field,G,6.1,Fungi,UnWeighted
+27,Site¡ÁField,F,9.4,Fungi,UnWeighted
+28,Time ,E,4.5,Fungi,UnWeighted
+29,Site¡ÁTime,D,10,Fungi,UnWeighted
+30,Field¡ÁTime,C,1.8,Fungi,UnWeighted
+31,Site¡ÁField¡ÁTime,B,8.6,Fungi,UnWeighted
+32,Unknow,A,45.3,Fungi,UnWeighted

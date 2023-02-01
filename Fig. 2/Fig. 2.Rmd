@@ -1,0 +1,206 @@
+---
+title: "Fig. 2"
+author: "Meiling Zhang"
+date: "2022/3/5"
+output: html_document
+---
+
+# Fig. 2a-b
+
+```{r}
+library(ggplot2)
+library(ggpubr)
+library (stringr)
+library (plyr)
+library(AICcmodavg)
+library(ggpmisc)
+
+alpha=read.table("alpha/F_alpha_design.txt", header=T, row.names=1, sep="\t", comment.char="")
+temp_alpha = subset(alpha, alpha$FieldType %in% c("Paddy"))
+sub_alpha <- data.frame (temp_alpha$Latitude_m, temp_alpha$Shannon_entropy,temp_alpha$FieldType,temp_alpha$IncubationTime)
+colnames (sub_alpha)[1]<- "x" 
+colnames (sub_alpha)[2] <- "y"
+colnames (sub_alpha)[3] <- "FieldType"
+colnames (sub_alpha)[4] <- "IncubationTime"
+
+models <- list (lm (y ~ x, data = sub_alpha),
+                lm (y ~ I(1/x), data = sub_alpha),
+                lm (y ~ log(x), data = sub_alpha),
+                nls (y ~ I(x^2 *a)+ b* x + c, data = sub_alpha, start = list (a= 1, b = 1, c= 0)), 
+                nls (y ~ I(1/x * a)+ b * x, data = sub_alpha, start = list (a = 1, b = 1)),
+                nls (y ~(a + b*log(x)), data = sub_alpha, start = setNames (coef (lm (y ~ log(x), data = sub_alpha)), c("a", "b"))),
+                nls (y ~ I(1/x * a)+b, data = sub_alpha, start = list (a= 1, b= 1)),
+                nls (y ~ a*I(x^b), data = sub_alpha, start = list (a= 2, b= 1.5)))
+ldply (models, function(mod){ data.frame (AICc = AICc(mod), AIC = AIC(mod), model = deparse(formula(mod))) })
+
+group="F_P"
+my_formular <- y ~ I(x^2)+x
+#P1=B_U,P2=B_P,P3=F_U,P4=F_P
+Time=factor(sub_alpha$IncubationTime,levels = c("D0","Day7","Day30","Day60"))
+p=ggplot(sub_alpha, aes(x = x, y = y,color=FieldType)) +
+geom_point(alpha=0.5,size=1.5,aes(shape=Time)) +
+labs(title = '',x = 'Latitude', y = 'Shannon')+
+  theme_bw()+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  guides(fill=FALSE)+ggtitle(paste0("",group))+scale_fill_manual(values=c("#2B83BA"))+scale_color_manual(values=c("#2B83BA"))+geom_smooth(method = "lm", formula = my_formular) +stat_poly_eq(aes(label = paste(stat(eq.label),
+                                  stat(adj.rr.label),
+                                  stat(p.value.label),
+                                  stat(AIC.label),
+                                  sep = "*\", \"*")),
+                                  coef.digits = 4,
+               formula = my_formular, parse = TRUE)
+
+p
+
+width = 100
+height = 80
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 2c
+
+```{r data, warning=FALSE}
+library(ggplot2)
+library(vegan)
+library(permute)
+library(lattice)
+
+distance_mat<-read.table("beta/F_bray_curtis.txt",header = T, row.names=1)
+design<-read.csv("beta/metadata.csv",header = T,row.names=1,sep = ",")
+
+idx = rownames(design) %in% colnames(distance_mat)
+sub_design = design[idx,]
+distance_mat = distance_mat[rownames(sub_design), rownames(sub_design)]
+
+pcoa = cmdscale(distance_mat, k=3, eig=T)
+points = as.data.frame(pcoa$points)
+colnames(points) = c("x", "y", "z") 
+eig = pcoa$eig
+points = cbind(points, sub_design[match(rownames(points), rownames(sub_design)), ])
+
+group="F_bray_curtis"
+sub_points=subset(points, points$Treatment %in% c("RawSoil","Straw"))
+
+field_latitude=factor(sub_points$Group,levels = c("Upland_Low_Latitude","Upland_Mid_Latitude","Upland_High_Latitude","Paddy_Low_Latitude","Paddy_Mid_Latitude","Paddy_High_Latitude"))
+p = ggplot(sub_points, aes(x=x, y=y))+ geom_point(size=0.6,alpha=0.6,aes(shape=IncubationTime,color=field_latitude))+ 
+  labs(x=paste("PCoA 1 (", format(100 * eig[1] / sum(eig), digits=4), "%)", sep=""),y=paste("PCoA 2 (", format(100 * eig[2] / sum(eig), digits=4), "%)",sep=""))+
+theme(panel.background = element_rect(colour = "black"))+theme_bw()+
+theme(panel.grid.major =  element_line(size=0.1),panel.grid.minor = element_line(size = 0.1))+
+ theme(axis.text.x = element_text(size = 8),axis.text.y = element_text(size = 8))+
+   theme(axis.title.y= element_text(size=10))+theme(axis.title.x = element_text(size = 10))+
+  theme(legend.title=element_text(size=10),legend.text=element_text(size=8))+
+  ggtitle(paste0("",group))+theme(plot.title = element_text(size = 10))+scale_color_manual(values=c("#FEE090","#F46D43","#A50026","#A8DDB5","#2B8CBE","#313695"))
+
+p
+
+width = 100
+height = 60
+ggsave(paste0("",group,".pdf"), p, width = width, height = height,units = "mm")
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height,units = "mm")
+```
+
+# Fig. 2d
+
+```{r}
+library(ggplot2)
+
+factor = read.table("beta/factor.csv", header = T, row.names=1,sep = ",")
+sub_dis=subset(factor, factor$Distance %in% c("UnWeighted"))
+factor$Factor<-factor(factor$Factor,levels=c("Unknow", "Site×Field×Time","Field×Time","Site×Time","Time ","Site×Field","Field","Site"), labels = c("Unknow", "Site×Field×Time","Field×Time","Site×Time","Time ","Site×Field","Field","Site"))
+color <- c(RColorBrewer::brewer.pal(8, "RdGy")[8:1])
+
+p=ggplot(data=sub_dis,aes(x=Domains,y=R2,fill=Factor))+
+  geom_bar(stat="identity",position="stack",width=0.8)+
+  theme_bw()+theme(axis.ticks.length=unit(0.5,'cm'))+
+  guides(fill=guide_legend(title=NULL))+
+  xlab("Domains")+ylab("Explained variation (%)")+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  theme(axis.text.x = element_text(size = 8,color ="black"),axis.text.y = element_text(size = 8,color ="black"))+scale_fill_manual(name = "Phylum",values = color,limits = c("Unknow", "Site×Field×Time","Field×Time","Site×Time","Time ","Site×Field","Field","Site"))
+p
+group="adonis_UnWeighted"
+width =50
+height = 70
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 2e-f
+
+```{r}
+library(reshape2)
+library(tidyverse)
+library(cowplot)
+
+#bacteria
+tax_p <- read.delim('tax/tax_p_B.txt', row.names = 1)
+design<-read.csv("tax/tax_design.csv",header = T,row.names=1,sep = ",")
+design=subset(design,design$Treatment%in% c("RawSoil","Straw"))
+tax=as.data.frame(t(tax_p))
+tax$Name=rownames(tax)
+point_melt <- melt(tax,id.vars = c("Name"),variable.name = "Phylum",value.name = "RA")
+design$Name=rownames(design)
+phylum.ra=point_melt %>% inner_join(design %>% ungroup() %>% select(Name, Sample_order,FieldType,Treatment), by = "Name")
+
+top.phy <- phylum.ra %>% 
+  group_by(Phylum)%>% 
+  summarise(total = sum(RA)) %>% 
+  top_n(10, total)
+phylum=phylum.ra %>% inner_join(top.phy, by = "Phylum")%>% group_by(FieldType,Sample_order,Phylum)%>% summarise(meanRA = mean(RA))
+phylum$FieldType<-factor(phylum$FieldType,levels=c("Upland", "Paddy"), labels = c("Upland", "Paddy"))
+
+color <- c(RColorBrewer::brewer.pal(10, "Paired")[1:2],RColorBrewer::brewer.pal(10, "Paired")[5:6],RColorBrewer::brewer.pal(10, "Paired")[7:8],RColorBrewer::brewer.pal(10, "Paired")[9:10],RColorBrewer::brewer.pal(10, "Paired")[3:4])
+
+group="16S_Phylum"
+p1=ggplot(phylum,aes(Sample_order, meanRA, fill = Phylum)) +
+  geom_bar(stat = "identity",width = 1) +
+  facet_grid(.~FieldType) +
+scale_fill_manual(name = "Phylum",values = color) +
+  guides(fill = guide_legend(ncol = 3))+
+  theme_minimal()+ggtitle(paste0("",group))+
+  ylab("Relative abundance (%)")+xlab("Treatment")+ 
+  geom_point(aes(x = Sample_order, y = -0.05, color = Sample_order))+
+  scale_color_gradientn(colors = c("#FEE090","#F46D43","#A50026"))+theme_classic()+theme(text = element_text(size = 12), legend.position = "bottom")
+p1
+
+
+#fungi
+tax_p <- read.delim('tax/tax_c_F.txt', row.names = 1)
+design<-read.csv("tax/tax_design.csv",header = T,row.names=1,sep = ",")
+design=subset(design,design$Treatment%in% c("RawSoil","Straw"))
+tax=as.data.frame(t(tax_p))
+tax$Name=rownames(tax)
+point_melt <- melt(tax,id.vars = c("Name"),variable.name = "Phylum",value.name = "RA")
+design$Name=rownames(design)
+phylum.ra=point_melt %>% inner_join(design %>% ungroup() %>% select(Name, Sample_order,FieldType,Treatment), by = "Name")
+
+top.phy <- phylum.ra %>% 
+  group_by(Phylum)%>% 
+  summarise(total = sum(RA)) %>% 
+  top_n(10, total)
+
+pphylum=phylum.ra %>% inner_join(top.phy, by = "Phylum")%>% group_by(FieldType,Sample_order,Phylum)%>% summarise(meanRA = mean(RA))
+phylum$FieldType<-factor(phylum$FieldType,levels=c("Upland", "Paddy"), labels = c("Upland", "Paddy"))
+
+color <- c(RColorBrewer::brewer.pal(5, "Blues")[5:2],RColorBrewer::brewer.pal(4, "Reds")[4:2],RColorBrewer::brewer.pal(5, "Greens")[5:2])
+
+group="ITS_Class"
+p2=ggplot(phylum,aes(Sample_order, meanRA, fill = Phylum)) +
+  geom_bar(stat = "identity",width = 1) +
+  facet_grid(.~FieldType) +
+  scale_fill_manual(name = "Phylum",values = color) +
+  guides(fill = guide_legend(ncol = 3))+
+  theme_minimal()+ggtitle(paste0("",group))+
+  ylab("Relative abundance (%)")+xlab("Treatment")+ 
+  geom_point(aes(x = Sample_order, y = -0.05, color = Sample_order))+
+  scale_color_gradientn(colors = c("#FEE090","#F46D43","#A50026"))+theme_classic()+theme(text = element_text(size = 12), legend.position = "bottom")
+p2
+
+all_plot <- plot_grid(p1, p2,ncol = 2,nrow=1,align ="v")
+all_plot
+group="tax"
+width = 250
+height = 100
+ggsave(paste0("",group,".pdf"), all_plot, width = width, height = height,units = "mm")
+ggsave(paste0("",group,".JPEG"), all_plot, width = width, height = height,units = "mm")
+```
