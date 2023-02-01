@@ -1,0 +1,342 @@
+---
+title: "Fig. 7"
+author: "Meiling Zhang"
+date: "2022/7/31"
+output: html_document
+---
+
+# Fig. 7a-i
+
+```{r packages, echo=FALSE}
+library(sf)
+library(raster)
+library(rasterVis)
+library(ggplot2)
+library(ggspatial)
+library(ncdf4)
+library(cowplot)
+
+#High_OM
+group="High_OM"
+temp= raster('Paddy/High_OM.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+
+map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(2,5,7,10)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+High_OM=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =High_OM))+
+  scale_fill_gradientn(limits  = range(data$High_OM),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$High_OM)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+High_OM
+
+#High_TN
+group="High_TN"
+temp= raster('Paddy/High_TN.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(2,5,7,10)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+High_TN=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =High_TN))+
+  scale_fill_gradientn(limits  = range(data$High_TN),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$High_TN)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+High_TN
+
+#High_NHN
+group="High_NHN"
+temp= raster('Paddy/High_NHN.tif',band=1,varname='TP')
+st_crs(temp)$proj4string#
+
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(2,5,7,10)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+High_NHN=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =High_NHN))+
+  scale_fill_gradientn(limits  = range(data$High_NHN),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$High_NHN)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+High_NHN
+
+#High_NO
+group="High_NON"
+temp= raster('Paddy/High_NON.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(4,8,10,15)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+High_NON=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =High_NON))+
+  scale_fill_gradientn(limits  = range(data$High_NON),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$High_NON)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+High_NON
+
+#Low_OM
+group="Low_OM"
+temp= raster('Paddy/Low_OM.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(0.2,0.3,0.4,0.6)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+Low_OM=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =Low_OM))+
+  scale_fill_gradientn(limits  = range(data$Low_OM),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$Low_OM)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+Low_OM
+
+
+#Low_pH
+group="Low_pH"
+temp= raster('Paddy/Low_pH.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(6,8,10,15)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+Low_pH=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =Low_pH))+
+  scale_fill_gradientn(limits  = range(data$Low_pH),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$Low_pH)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+Low_pH
+
+#Low_TAP
+group="Low_TAP"
+temp= raster('Paddy/Low_TAP.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(15,20,25,30)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+Low_TAP=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =Low_TAP))+
+  scale_fill_gradientn(limits  = range(data$Low_TAP),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$Low_TAP)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+Low_TAP
+
+#Low_MAT
+group="Low_MAT"
+temp= raster('Paddy/Low_MAT.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(15,20,25,30)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+Low_MAT=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =Low_MAT))+
+  scale_fill_gradientn(limits  = range(data$Low_MAT),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$Low_MAT)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+Low_MAT
+
+#Low_AK
+group="Low_AK"
+temp= raster('Paddy/Low_AK.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+
+# map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+# boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(0.04,0.06,0.08,0.1)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+Low_AK=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =Low_AK))+
+  scale_fill_gradientn(limits  = range(data$Low_AK),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$Low_AK)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+Low_AK
+
+all_plot <- plot_grid(High_OM,High_TN,High_NHN,High_NON,Low_OM,Low_pH,Low_TAP,Low_MAT,Low_AK,ncol = 3,nrow=3,align ="v")
+all_plot
+
+width=600
+height = 450
+group="Paddy_clusters"
+ggsave(paste0("2",group,".pdf"), all_plot, width = width, height = height, units = "mm")
+ggsave(paste0("2",group,".JPEG"), all_plot, width = width, height = height, units = "mm")
+```
+
+# Fig. 7j
+
+```{r}
+group="China_Paddy"
+temp= raster('Paddy/China_paddy.tif',band=1,varname='TP')
+st_crs(temp)$proj4string
+map_china = read_sf("https://geo.datav.aliyun.com/areas_v2/bound/100000_full.json")
+boder_wgs <- st_transform(map_china,"+proj=aea +lat_0=0 +lon_0=105 +lat_1=25 +lat_2=47 +x_0=0 +y_0=0 +ellps=krass +units=m +no_defs")
+
+df<- as.data.frame(as(temp,"Raster"),xy=T)
+data=df[complete.cases(df[,3:3]),]
+
+colour_breaks <- c(60,80,90,110)
+colours <- c("#0571B0", "#92C5DE", "#F4A582","#CA0020")
+
+p=ggplot()+geom_sf(data=boder_wgs,fill = "NA",color="black")+
+geom_tile(data=data,aes(x=x,y=y,fill =China_paddy))+
+  scale_fill_gradientn(limits  = range(data$China_paddy),
+    colours = colours[c(1, seq_along(colours), length(colours))],
+    values  = c(0, scales::rescale(colour_breaks, from = range(data$China_paddy)), 1),na.value="transparent",guide = guide_colourbar(direction = "horizontal",title.position="top"))+
+  theme(panel.grid.major=element_blank(),
+       panel.grid.minor=element_blank(),
+       panel.background = element_blank(),
+       legend.title = element_blank())+coord_sf(ylim=c(1800000,5921396),xlim =c(-2500000,2500000))+ylab("")+
+  xlab("")+theme(legend.position = "top")+theme_set(theme_bw())
+p
+
+width=300
+height = 200
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 7k
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+
+Northeast = read.table("Region/Northeast.csv",header = T, row.names=1,sep = ",")
+Inner_Mongolia=read.table("Region/Inner Mongolia.csv",header = T, row.names=1,sep = ",")
+Northwest=read.table("Region/Northwest.csv",header = T, row.names=1,sep = ",")
+North=read.table("Region/North.csv",header = T, row.names=1,sep = ",")
+Southeast=read.table("Region/Southeast.csv",header = T, row.names=1,sep = ",")
+Central=read.table("Region/Central.csv",header = T, row.names=1,sep = ",")
+Southwest=read.table("Region/Southwest.csv",header = T, row.names=1,sep = ",")
+South=read.table("Region/South.csv",header = T, row.names=1,sep = ",")
+
+Paddy=rbind(Northeast,Inner_Mongolia,Northwest,North,Southeast,Central,Southwest,South)
+Paddy=Paddy %>%mutate(Field = "Paddy")
+final=Paddy
+
+final$region<-factor(final$region,levels=c("Northeast","Inner Mongolia","Northwest","North","Qinghai-Tibet","Southeast","Central","Southwest","South"), labels =c("Northeast","Inner Mongolia","Northwest","North","Qinghai-Tibet","Southeast","Central","Southwest","South"))
+
+color <- c(RColorBrewer::brewer.pal(11, "Spectral")[11:7],RColorBrewer::brewer.pal(11, "Spectral")[4:1])
+
+group="paddy_region"
+p0 <- ggplot(final, aes(x=region, y=rate, color=region)) + geom_boxplot(width=0.5,outlier.size = 0.2)+
+theme(panel.background = element_rect(colour = "black"))+theme_bw()+theme(legend.title=element_text(size=7),legend.text=element_text(size=7))+
+  theme(legend.position='right',legend.key.size = unit(0.3,'cm'))+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  theme(axis.title.y= element_text(size=10))+theme(axis.title.x = element_text(size = 10))+
+  theme(axis.text.x = element_text(size = 7),axis.text.y = element_text(size = 7))+
+  xlab(paste0(group))+ylab("Carbon release rate")+ggtitle(paste0(group))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+facet_wrap(. ~ Field,scales="free_y", nrow = 2,ncol=1)
+p0
+
+p1 <- p0+
+  scale_fill_manual(values=c("white", "white","white","white", "white","white","white", "white","white"))+
+  ggtitle(paste0(group))+scale_color_manual(name = "Region",values=color)
+p1
+
+width = 120
+height = 60
+ggsave(paste0("Carbon_",group,".pdf"), p1, width = width, height = height,units = "mm")
+ggsave(paste0("Carbon_",group,".JPEG"), p1, width = width, height = height,units = "mm")
+```
+
+
+
+
