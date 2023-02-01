@@ -1,0 +1,214 @@
+---
+title: "Fig. 5"
+author: "Meiling Zhang"
+date: "2022年3月18日"
+output: html_document
+---
+
+# Random forest
+
+```{r}
+library(rfPermute)
+library(dplyr)
+
+Upland=read.csv("data/Upland_eco.csv",header = T,row.names=1,sep = ",")
+Upland$Name=rownames(Upland)
+Paddy=read.csv("data/Paddy_eco.csv",header = T,row.names=1,sep = ",")
+Paddy$Name=rownames(Paddy)
+CO2S=read.csv("data/CO2_straw.csv",header = T,row.names=1,sep = ",")
+CO2S$Name=rownames(CO2S)
+
+#upland
+sub_CO2S=subset(CO2S, CO2S$Fieldtype%in% c("Upland"))
+U_final= Upland%>% inner_join(sub_CO2S %>% ungroup() %>% select(Name, CO2), by = "Name")
+rownames(U_final)=U_final$Name
+U_final=U_final[,-c(22)]
+
+#paddy
+sub_CO2S=subset(CO2S, CO2S$Fieldtype%in% c("Paddy"))
+P_final= Paddy%>% inner_join(sub_CO2S %>% ungroup() %>% select(Name, CO2), by = "Name")
+rownames(P_final)=P_final$Name
+P_final=P_final[,-c(22)]
+
+group="Upland"
+sub_data=U_final
+set.seed(123) 
+train <- sample(nrow(sub_data), nrow(sub_data)*0.7)
+otu_train <- sub_data[train, ]
+otu_test <- sub_data[-train, ]
+
+otu_rfP <- rfPermute(CO2~., data = otu_train, importance = TRUE, ntree = 1000, nrep = 1000, num.cores = 2,na.action = na.omit)
+otu_rfP
+
+importance_otu.scale <- data.frame(importance(otu_rfP, scale = TRUE), check.names = FALSE)
+importance_otu.scale
+
+importance_otu.scale.pval <- (otu_rfP$pval)[ , , 2]
+importance_otu.scale.pval
+
+importance_otu.scale$factor <- rownames(importance_otu.scale)
+importance_otu.scale$factor <- factor(importance_otu.scale$factor, levels = importance_otu.scale$factor)
+
+for (OTU in rownames(importance_otu.scale)) {
+    importance_otu.scale[OTU,'%IncMSE.pval'] <- importance_otu.scale.pval[OTU,'%IncMSE']
+    if (importance_otu.scale[OTU,'%IncMSE.pval'] >= 0.05) importance_otu.scale[OTU,'%IncMSE.sig'] <- ''
+    else if (importance_otu.scale[OTU,'%IncMSE.pval'] >= 0.01 & importance_otu.scale[OTU,'%IncMSE.pval'] < 0.05) importance_otu.scale[OTU,'%IncMSE.sig'] <- '*'
+    else if (importance_otu.scale[OTU,'%IncMSE.pval'] >= 0.001 & importance_otu.scale[OTU,'%IncMSE.pval'] < 0.01) importance_otu.scale[OTU,'%IncMSE.sig'] <- '**'
+    else if (importance_otu.scale[OTU,'%IncMSE.pval'] < 0.001) importance_otu.scale[OTU,'%IncMSE.sig'] <- '***'
+}
+write.csv(importance_otu.scale,file=paste0("importance_otu.scale_",group,".csv"))
+```
+
+# Fig. 5a
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(cowplot)
+
+data_U=read.csv("data/Upland_MSE.csv",header = T,row.names=1,sep = ",")
+data_P=read.csv("data/Paddy_MSE.csv",header = T,row.names=1,sep = ",") 
+
+p1=ggplot(data_U,mapping = aes(x=reorder(factor,IncMSE),y=IncMSE))+
+  geom_point(stat = "identity",color="#E41A1C",size=2.5)+
+  geom_segment(aes(y=0,yend=IncMSE,x=factor,xend=factor),color="#E41A1C",linetype="dashed")+
+  ylim(0,25)+
+  coord_flip()+theme_bw()+ 
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  geom_text(data = data_U, aes(x = factor, y =IncMSE, label = sig), nudge_y = 5)+geom_hline(yintercept = 0, linetype="dashed",color = "black", size=0.5) 
+p1
+
+p2=ggplot(data_P,mapping = aes(x=reorder(factor,IncMSE),y=IncMSE))+
+  geom_point(stat = "identity",color="#377EB8",size=2.5)+
+  geom_segment(aes(y=0,yend=IncMSE,x=factor,xend=factor),color="#377EB8",linetype="dashed")+
+  ylim(0,25)+
+  coord_flip()+theme_bw()+ 
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  geom_text(data = data_P, aes(x = factor, y =IncMSE, label = sig), nudge_y = 5)+geom_hline(yintercept = 0, linetype="dashed",color = "black", size=0.5) 
+p2
+
+all_plot <- plot_grid(p1,p2,ncol = 2,nrow=1,align ="v")
+all_plot
+group="MSE"
+width = 180
+height = 150
+ggsave(paste0("",group,".JPEG"),all_plot, width = width, height = height,units = "mm")
+ggsave(paste0("",group,".pdf"), all_plot, width = width, height = height,units = "mm")
+```
+
+# Fig. 5b
+
+```{r random forest}
+library(randomForest)
+library(dplyr)
+library(ggpubr)
+library(ggplot2)
+
+Upland=read.csv("data/Upland_eco_select.csv",header = T,row.names=1,sep = ",")
+Upland$Name=rownames(Upland)
+Paddy=read.csv("data/Paddy_eco_select.csv",header = T,row.names=1,sep = ",")
+Paddy$Name=rownames(Paddy)
+CO2S=read.csv("data/CO2_straw.csv",header = T,row.names=1,sep = ",")
+CO2S$Name=rownames(CO2S)
+
+#upland
+sub_CO2S=subset(CO2S, CO2S$Fieldtype%in% c("Upland"))
+U_final= Upland%>% inner_join(sub_CO2S %>% ungroup() %>% select(Name, CO2), by = "Name")
+rownames(U_final)=U_final$Name
+U_final=U_final[,-c(8)]
+
+sub_data=U_final
+set.seed(123) 
+train <- sample(nrow(sub_data), nrow(sub_data)*0.7)
+otu_train <- sub_data[train, ]
+otu_test <- sub_data[-train, ]
+
+otu_train.forest <- randomForest(CO2~., data = otu_train, importance = TRUE, ntree =1000,num.cores = 3)
+otu_train.forest
+
+#train
+CO2_train <- predict(otu_train.forest, otu_train)
+CO2_observed=as.data.frame(otu_train[,-c(1:7)])
+train=cbind(CO2_observed,CO2_train)
+colnames(train)<-c("CO2_observed","CO2_predicted")
+train = train %>%mutate(Type = "Train")
+
+#test
+CO2_test <- predict(otu_train.forest, otu_test)
+CO2_observed=as.data.frame(otu_test[,-c(1:7)])
+test=cbind(CO2_observed,CO2_test)
+colnames(test)<-c("CO2_observed","CO2_predicted")
+test = test %>%mutate(Type = "Test")
+
+#train and test
+Upland_predict=rbind(train,test)
+Upland_predict= Upland_predict %>%mutate(Field = "Upland")
+
+
+#paddy
+sub_CO2S=subset(CO2S, CO2S$Fieldtype%in% c("Paddy"))
+P_final= Paddy%>% inner_join(sub_CO2S %>% ungroup() %>% select(Name, CO2), by = "Name")
+rownames(P_final)=P_final$Name
+P_final=P_final[,-c(10)]
+
+sub_data=P_final
+set.seed(123) 
+train <- sample(nrow(sub_data), nrow(sub_data)*0.7)
+otu_train <- sub_data[train, ]
+otu_test <- sub_data[-train, ]
+
+otu_train.forest <- randomForest(CO2~., data = otu_train, importance = TRUE, ntree =1000,num.cores = 3)
+otu_train.forest
+
+#train
+CO2_train <- predict(otu_train.forest, otu_train)
+CO2_observed=as.data.frame(otu_train[,-c(1:9)])
+train=cbind(CO2_observed,CO2_train)
+colnames(train)<-c("CO2_observed","CO2_predicted")
+train = train %>%mutate(Type = "Train")
+
+#test
+CO2_test <- predict(otu_train.forest, otu_test)
+CO2_observed=as.data.frame(otu_test[,-c(1:9)])
+test=cbind(CO2_observed,CO2_test)
+colnames(test)<-c("CO2_observed","CO2_predicted")
+test = test %>%mutate(Type = "Test")
+
+#train and test
+Paddy_predict=rbind(train,test)
+Paddy_predict= Paddy_predict %>%mutate(Field = "Paddy")
+
+predicted_summary=rbind(Upland_predict,Paddy_predict)
+write.csv(predicted_summary,file="predicted_summary.csv")
+
+points_U=subset(simulation, simulation$Field %in% c("Upland"))
+p1=ggplot(points_U, aes(x = CO2_observed, y = CO2_predicted,shape=Type,color=Type)) +
+geom_point(size=2,alpha=0.7,aes(color=Type)) +
+geom_smooth(method="lm",size=0.5) +
+labs(title = '',x = 'Measured RDC', y = 'Predicted RDC')+
+  theme_bw()+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  ggpubr::stat_cor(method = "pearson")+
+xlim(0,550)+ylim(x=c(0,550))+annotate(geom = "segment", x = 0, y = 0, xend =550, yend = 550,color="gray",size=0.5,alpha=0.8)+
+  scale_fill_manual(values=c("#F46D43","#A50026"))+facet_wrap( ~ Field, scales="free_y")+scale_color_manual(values=c("#F46D43","#A50026"))+theme_classic()
+p1
+
+points_P=subset(simulation, simulation$Field %in% c("Upland"))
+p2=ggplot(points_P, aes(x = CO2_observed, y = CO2_predicted,shape=Type,color=Type)) +
+geom_point(size=2,alpha=0.7,aes(color=Type)) +
+geom_smooth(method="lm",size=0.5) +
+labs(title = '',x = 'Measured RDC', y = 'Predicted RDC')+
+  theme_bw()+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  ggpubr::stat_cor(method = "pearson")+
+xlim(0,550)+ylim(x=c(0,550))+annotate(geom = "segment", x = 0, y = 0, xend =150, yend = 150,color="gray",size=0.5,alpha=0.8)+
+  scale_fill_manual(values=c("#74ADD1","#313695"))+facet_wrap( ~ Field, scales="free_y")+scale_color_manual(values=c("#74ADD1","#313695"))+theme_classic()
+p2
+
+p=ggarrange(p1,p2,nrow = 2,ncol=1)
+p
+width = 120
+height = 200
+group="Prediction"
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+```
