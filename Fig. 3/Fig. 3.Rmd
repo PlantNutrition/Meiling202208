@@ -1,0 +1,107 @@
+---
+title: "Fig. 3"
+author: "Meiling Zhang"
+date: "2021年11月26日"
+output: pdf_document
+---
+
+# Fig. 3a
+
+```{r major predictors}
+library(ggplot2)
+
+factor = read.table("data/IncMSE.csv",header = T, row.names=1,sep = ",")
+group="IncMSE"
+
+temp = subset(factor, factor$Treatment %in% c("F_paddy"))
+sub_data=factor[row.names(temp),]
+#p1=BU,p2=BP,p3=FU,p4=FP
+
+p4=ggplot(data = sub_data, mapping = aes(x=reorder(Factors,IncMSE),y=IncMSE)) +
+  geom_bar(stat="identity",width=0.85)+coord_flip()+theme_bw()+ggtitle(paste0("",group))+xlab("Envrionmental factors")+
+  ylab("Averaged importance (Increase in MSE %)")+
+  theme(plot.title = element_text(size = 8))+
+  theme(legend.title=element_text(size=8),legend.text=element_text(size=6))+
+  theme(legend.position='right',legend.key.size = unit(0.3,'cm'))+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  theme(axis.title.y= element_text(size=8))+theme(axis.title.x = element_text(size = 8))+
+  theme(axis.text.x = element_text(size = 6),axis.text.y = element_text(size = 6))+expand_limits(y=c(0,8))+
+  facet_wrap(~Treatment, ncol = 4, scales = 'free')
+p4
+p3
+p1
+
+p=ggarrange(p1,p2,p3,p4,nrow = 1,ncol=4) 
+p
+width =60
+height = 120
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 3b
+
+```{r}
+library(tidyverse)
+library(reshape2)
+library(ggplot2)
+
+final<-read.csv("data/eco_RA.csv",header = T,row.names=1,sep = ",")
+raw=subset(final, final$Time%in% c("raw"))
+all=raw %>% group_by(Eco_cluster,Env, Name)%>% summarise(RA = sum(RA))
+
+group= "all_raw"
+all$Eco_cluster<-factor(all$Eco_cluster,levels=c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH_N","Low NH_N","High NO_N", "Low NO_N"), labels = c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH_N","Low NH_N","High NO_N", "Low NO_N"))
+
+color <- c("#D73027","#D73027","#4575B4","#4575B4","#1A9850","#1A9850","#6A3D9A","#6A3D9A","#D95F02","#D95F02","#A6761D","#A6761D","#E7298A","#E7298A","#66A61E","#66A61E","#E6AB02","#E6AB02","#B3B3B3","#B3B3B3","#666666","#666666")
+
+p = ggplot(all, aes(x=Env, y=RA,color=Eco_cluster))+ geom_point(size = 1,alpha=0.4)+labs(x='',y='Eco-cluster abundance (%)')+
+theme(panel.background = element_rect(colour = "black"))+theme_bw()+
+ theme(axis.text.x = element_text(size = 8),axis.text.y = element_text(size = 8))+
+   theme(axis.title.y= element_text(size=10))+theme(axis.title.x = element_text(size = 10))+
+  theme(legend.title=element_text(size=10),legend.text=element_text(size=8))+
+theme(plot.title = element_text(size = 10))+ facet_wrap(~Eco_cluster, ncol = 6, nrow = 4,scale = 'free')+theme(panel.grid = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = 'black'))+ggtitle(paste0("",group))+scale_fill_manual(name="Eco-cluster",values=color,limits = c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH_N","Low NH_N","High NO_N", "Low NO_N"), labels = c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH_N","Low NH_N","High NO_N", "Low NO_N"))+scale_color_manual(name="Eco-cluster",values=color,limits = c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH_N","Low NH_N","High NO_N", "Low NO_N"), labels = c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH_N","Low NH_N","High NO_N", "Low NO_N"))+theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p
+
+width = 280
+height = 170
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 3c
+
+```{r}
+#This figure is generated using Gephi.
+```
+
+# Fig. 3d
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+library(ggpubr)
+
+phylum<-read.csv("data/phylum_number.csv",header = T,row.names=1,sep = ",")
+phylum<-subset(phylum, phylum$Ecological_cluster%in% c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH N","Low NH N","High NO N", "Low NO N"), labels = c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH N","Low NH N","High NO N", "Low NO N"))
+
+phylum$Field_types<-factor(phylum$Field_types,levels=c("Upland", "Paddy"), labels = c("Upland", "Paddy"))
+phylum$Phylum<-factor(phylum$Phylum,levels=c("Acidobacteriota", "Actinobacteriota","Alphaproteobacteria","Bacteroidota","Chloroflexi","Desulfobacterota","Firmicutes","Gammaproteobacteria","Myxococcota","Verrucomicrobiota","Agaricomycetes","Ascomycota_unclassified","Dothideomycetes","Eurotiomycetes","k__Fungi_unclassified","Leotiomycetes", "Sordariomycetes","Tremellomycetes","Wallemiomycetes","Zygomycota_unclassified","Low number"), labels = c("Acidobacteriota", "Actinobacteriota","Alphaproteobacteria","Bacteroidota","Chloroflexi","Desulfobacterota","Firmicutes","Gammaproteobacteria","Myxococcota","Verrucomicrobiota","Agaricomycetes","Ascomycota_unclassified","Dothideomycetes","Eurotiomycetes","k__Fungi_unclassified","Leotiomycetes", "Sordariomycetes","Tremellomycetes","Wallemiomycetes","Zygomycota_unclassified","Low number"))
+
+color <- c(RColorBrewer::brewer.pal(8, "Set2")[8:1],RColorBrewer::brewer.pal(9, "RdGy")[3:4],RColorBrewer::brewer.pal(10, "RdYlBu")[1:10],RColorBrewer::brewer.pal(3, "RdGy")[3])
+#细菌16个颜色，真菌11个
+
+group="11_cluster"
+p=ggplot(phylum,aes(Ecological_cluster, Count, fill = Phylum)) +
+  geom_bar(stat = "identity",position="fill",width = 0.8) +
+  scale_fill_manual(name = "Phylum",values = color,limits = c("Acidobacteriota", "Actinobacteriota","Alphaproteobacteria","Bacteroidota","Chloroflexi","Desulfobacterota","Firmicutes","Gammaproteobacteria","Myxococcota","Verrucomicrobiota","Agaricomycetes","Ascomycota_unclassified","Dothideomycetes","Eurotiomycetes","k__Fungi_unclassified","Leotiomycetes", "Sordariomycetes","Tremellomycetes","Wallemiomycetes","Zygomycota_unclassified","Low number")) +guides(fill = guide_legend(ncol = 5))+ggtitle(paste0("",group))+theme_bw()+
+  ylab("OTUs within each cluster (%)")+xlab("Eco-cluster")+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  scale_x_discrete(limits=c("High MAT", "Low MAT","High TAP", "Low TAP","High pH", "Low pH","High OM","Low OM", "High AP", "Low AP","High AK","Low AK","High TP", "Low TP", "High TK","Low TK", "High TN","Low TN", "High NH N","Low NH N","High NO N", "Low NO N"))+ theme_classic()+ theme(axis.text.x = element_text(angle = 45, hjust = 1))+ theme(text = element_text(size = 12), legend.position = "bottom")+facet_wrap(. ~ Field_types+domain, nrow = 2,ncol=2)
+p
+
+width =300
+height = 200
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+```
