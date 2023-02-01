@@ -1,0 +1,171 @@
+---
+title: "cumulative data"
+author: "Meiling Zhang"
+date: "2022/10/27"
+output: html_document
+---
+
+# Fig. 4a
+
+```{r}
+#This figure is generated using GraphPad Prism 8.0.0.
+```
+
+# Fig. 4b
+
+```{r}
+library(ggplot2)
+library(ggpubr)
+
+data <- read.csv("RDC/cumulative_straw.csv",header = T,row.names=1,sep = ",")
+data$Fieldtype<-factor(data$Fieldtype,levels=c("Upland", "Paddy"), labels = c("Upland", "Paddy"))
+
+group="Cumulative_UP"
+p0 <- ggplot(data, aes(x=Fieldtype, y=Values,color=Fieldtype)) + geom_boxplot(width=0.5,outlier.size = 0.2)+
+  theme(panel.background = element_rect(colour = "black"))+theme_bw()+theme(legend.title=element_text(size=7),legend.text=element_text(size=7))+
+  theme(legend.position='right',legend.key.size = unit(0.3,'cm'))+
+  theme(panel.grid.major =  element_line(size=0.1),panel.grid.minor = element_line(size = 0.1))+
+  theme(axis.title.y= element_text(size=10))+theme(axis.title.x = element_text(size = 10))+
+  theme(axis.text.x = element_text(size = 7),axis.text.y = element_text(size = 7))+
+  xlab("")+ ylab(expression(paste("CO"["2"], " flux", " (mg"," C"," kg"^"-1","soil)"),color="black"))+theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())
+p0
+p <- p0+geom_jitter(width = 0.2,aes(color=Fieldtype),size=0.6,alpha=0.5)+
+  scale_fill_manual(values=c("white", "white"))+
+  scale_color_manual(values=c("#E41A1C","#377EB8"))+stat_compare_means(method="wilcox.test")
+p
+
+width=65
+height = 80
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 4c
+
+```{r data}
+library(ggplot2)
+library(dplyr)
+
+env<-read.csv("RDC/Env.csv",header = T,row.names=1,sep = ",")
+CO2S <- read.csv("RDC/cumulative_straw.csv",header = T,row.names=1,sep = ",")
+env$Sample=rownames(env)
+data= CO2S%>% inner_join(env %>% ungroup() %>% select(Sample,Latitude), by = "Sample")
+
+data$Fieldtype<-factor(data$Fieldtype,levels=c("Upland", "Paddy"), labels = c("Upland", "Paddy"))
+
+group="Cumulative_straw"
+p=ggplot(data, aes(x = Latitude, y = Values,color=Fieldtype)) +
+geom_point(aes(color=Fieldtype),size=2,alpha=0.5) +
+geom_smooth(method="lm",size=0.5,color="black") +
+labs(title = '',x = 'Latitude', y = 'Cumulative RDC')+
+  theme_bw()+
+  theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  ggpubr::stat_cor(method = "pearson")+scale_color_manual(values=c("#E41A1C","#377EB8"))+facet_wrap( ~ Fieldtype, scales="free_y", ncol=2)
+p
+
+width = 160
+height = 80
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 4d
+
+```{r}
+library(plspm)
+library(ggplot2)
+library(dplyr)
+
+env<-read.csv("SEM/micro_env.csv",header = T,row.names=1,sep = ",")
+CO2S <- read.csv("SEM/cumulative_straw.csv",header = T,row.names=1,sep = ",")
+env$Sample=rownames(env)
+data=env%>% inner_join(CO2S %>% ungroup() %>% select(Sample,Values), by = "Sample")
+sem=data[,c(-28)]
+attach(sem)
+names(sem)
+sem
+
+Spatial <- c(0,0,0,0,0,0,0)
+Field <- c(0,0,0,0,0,0,0)
+Climate <- c(1,0,0,0,0,0,0)
+Soil <- c(1,1,0,0,0,0,0)
+Alpha <- c(1,1,1,1,0,0,0)
+Beta <- c(1,1,1,1,0,0,0)
+PE<- c(1,1,0,1,1,1,0)
+
+sem_path=rbind(Spatial, Field, Climate, Soil,Alpha, Beta, PE)
+innerplot(sem_path) 
+colnames(sem_path) = rownames(sem_path)
+
+group="select factors"
+sem_blocks <- list(					
+  Spatial = c('Longitude','Latitude','Altitude'),					
+  Field = 'Field',					
+  Climate = c('MAT', 'TAP'), 					
+  Soil = c('pH','TK','TN','OM'),					
+  Alpha = c('B_Shannon','B_Evenness','B_Faith_pd','B_Richness'),					
+  Beta = c('B_PCoA1','B_PCoA2','F_PCoA1'), 					
+ PE = 'Values')					
+sem_modes = rep("A",7)
+sem_pls = plspm(sem,sem_path,sem_blocks,modes = sem_modes,boot.val = T,br=1000)					
+sem_pls						
+
+sem_pls$gof#gof
+x=sem_pls$outer_model
+write.csv(x,file="temp.csv")
+
+coefs=as.data.frame(sem_pls$path_coefs)
+write.csv(coefs,file=paste0("coefs_",group,".csv"))#path coefficients
+
+sem_pls$inner_model#model
+
+x=sem_pls$effects
+write.csv(x,file="SEM_effect.csv")#effects
+
+x=sem_pls$inner_summary
+write.csv(x,file="R2.csv")#R2
+```
+
+# Fig. 4e
+
+```{r}
+data<-read.csv("SEM/SEM_effect.csv",header = T,row.names=1,sep = ",")
+
+library(ggplot2)
+group="SEM effect"
+Treatment=factor(data$Group,levels = c("Direct","Indirect"))
+
+p=ggplot(data,aes(x=Group, y=Effect, fill=Treatment)) +
+  geom_bar(stat="identity", position=position_dodge(0.9),width = 0.8) +
+  scale_fill_brewer(palette = "Set3") +
+  theme_minimal()+ggtitle(paste0("",group))+
+  ylab("Standardized effects")+theme_bw()+ theme(panel.grid.major=element_blank(),panel.grid.minor=element_blank())+
+  scale_fill_manual(values=c("#FF8D5E","#85A0CE"))+ expand_limits(y=c(-0.4,0.4))+ facet_grid(. ~ Factor)+
+  theme_classic()+theme(axis.text.x = element_text(size = 7,angle = 45, hjust = 1, vjust = 1),axis.text.y = element_text(size = 7))
+  p
+
+width =60
+height = 50
+ggsave(paste0("",group,".JPEG"), p, width = width, height = height, units = "mm")
+ggsave(paste0("",group,".pdf"), p, width = width, height = height, units = "mm")
+```
+
+# Fig. 4f
+
+```{r packages}
+library(ggplot2)
+library(corrplot)
+library(ggplot2)
+library(RColorBrewer)
+
+plot_dat=read.csv("Cor/cor.csv",header = T,row.names=1,sep = ",")
+sig_dat=read.csv("Cor/sig.csv",header = T,row.names=1,sep = ",")
+plot_dat=as.matrix(plot_dat)
+sig_dat=as.matrix(sig_dat)
+
+library(corrplot)
+library(ggplot2)
+library(RColorBrewer)
+
+mycol=rev(brewer.pal(n=8,name="RdBu"))
+corrplot(plot_dat, p.mat=sig_dat,insig = "label_sig",sig.level=c(0.001,0.01,0.05),pch.cex = 0.7,pch.col = "white",method = "square",col=mycol)
+```

@@ -1,0 +1,5 @@
+,Factor,Effect,Group
+1,Climate,0,Direct
+2,Soil,-0.144865808,Direct
+3,Climate,0.371467879,Indirect
+4,Soil,-0.123354947,Indirect
